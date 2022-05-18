@@ -1,5 +1,5 @@
 print("要兑换的钱的类型 美元（USD）人民币（RMB）")
-a=(input("请输入：\n")
+a=(input("请输入：\n"))
 b=input("请输入金额大小：\n")
 if a==1:
     b=b*6
