@@ -1,4 +1,5 @@
 import re
+
 """
 This doc is using for study how to use regex in program.
 Every different using way will be use with explain.
@@ -18,8 +19,6 @@ resultTwo = re.findall(regex_two, str_one)
 resultThree = re.findall(regex_three, str_one)
 resultFour = re.findall(regex_four, str_one)
 resultFive = re.findall(regex_five, str_one)
-
-
 
 if __name__ == '__main__':
     print(resultOne)

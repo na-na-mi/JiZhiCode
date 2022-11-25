@@ -15,7 +15,7 @@ obj=re.compile(r'</div>.*?<span class="title">(?P<名字>.*?)</span>.*?<p class=
                 r'(?P<标语>.*?)</span>',re.S)
 
 result=obj.finditer(page_content)
-f=open("data1.csv",mode="w",newline="") #newline去掉文件空行
+f=open("../data1.csv", mode="w", newline="") #newline去掉文件空行
 csvwriter=csv.writer(f)
 for it in result:
     print(it.group("名字"))

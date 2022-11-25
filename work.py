@@ -19,4 +19,8 @@ print(re.findall(regex, str3))
 
 print(re.findall(r"td", str))
 print(re.findall(r"^td", str))
-
+a = "ipadress 192.168.31.5 bala"
+regex2 = re.compile('((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}')
+regex3 = re.compile('^ ((2((5[0 - 5]) | ([0 - 4]\d))) | ([0 - 1]?\d{1, 2}))(\.((2((5[0 - 5]) | ([0 - 4]\d))) | ([0 - 1]?\d{1, 2}))){3}$')
+print(regex2.search(a))
+print(regex3.search(a))

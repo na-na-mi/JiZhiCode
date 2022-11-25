@@ -7,7 +7,7 @@ headers = {
                   '(KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36'
 }
 
-book_file = open('豆瓣读书.csv', mode='a', newline='', encoding='utf8')
+book_file = open('../豆瓣读书.csv', mode='a', newline='', encoding='utf8')
 writer = csv.writer(book_file)
 writer.writerow(['书名', '作者', '出版社', '出版时间', '价格', '评分', '评论', '链接'])
 

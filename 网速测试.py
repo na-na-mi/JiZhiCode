@@ -1,3 +1,4 @@
+
 import speedtest
 
 
@@ -11,4 +12,5 @@ def main():
 
 
 if __name__ == '__main__':
+    print("测试中。。。请耐心等候")
     main()

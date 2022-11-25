@@ -10,7 +10,7 @@ def getHtml(url):
         r.encoding = 'gbk'
         return r.text
     except:
-        return ''
+        return '产生异常'
 
 
 def saveInfo(html):
@@ -44,13 +44,19 @@ def saveInfo(html):
             for act in actors.contents:
                 actor = actor + act.string + ' '
         except:
-            actor = '暂时无演员姓名'
+            actor = '暂时无演员简介\n'
         # 简介
         if top.find('p', class_='pTxt pIntroHide'):
             intro = top.find('p', class_='sub-tit').get_text()
         else:
             intro = top.find('p', class_='sub-tit').get_text()
-        print('影片名：{}  上映年份{}\n演员{}\n简介{}\n{}\n'.format(name, time, actor, intro, score))
+        # 时长
+        try:
+            long = top.find('div', class_='season').get_text()
+        except:
+            long = '暂时无时长'
+
+        print('影片名：{} 上映年份{} 演员：{}  简介：{} 评分：{} 时长：{}\n'.format(name, time, actor, intro, score, long))
 
 
 def main():
@@ -59,4 +65,5 @@ def main():
     saveInfo(html)
 
 
-main()
+if __name__ == '__main__':
+    main()
