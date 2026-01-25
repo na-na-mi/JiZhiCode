@@ -12,9 +12,8 @@ from datetime import datetime
 # ================= 配置区域 =================
 SMTP_SERVER = 'smtp.qq.com'  # SMTP服务器
 SMTP_PORT = 465  # SSL端口通常是465
-SENDER_EMAIL = '1366400216@qq.com'  # 发件人邮箱
-# 注意：这里填的不是QQ密码，是邮箱设置里开启POP3/SMTP服务时获取的“授权码”
-SENDER_PASS = 'lfvjimvncrtojhde'
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL') 
+SENDER_PASS = os.environ.get('SENDER_PASS')
 
 # 收件箱设置 (可以是同一个邮箱，也可以是你的手机139邮箱等)
 RECEIVERS = [
