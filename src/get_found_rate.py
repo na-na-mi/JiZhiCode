@@ -17,8 +17,7 @@ SENDER_PASS = os.environ.get('SENDER_PASS')
 
 # 收件箱设置 (可以是同一个邮箱，也可以是你的手机139邮箱等)
 RECEIVERS = [
-    'ljz400216@163.com',
-'1282611712@qq.com'
+    'ljz400216@163.com'
 ]
 
 # --- 🎯 我的自选基金 (在这里添加你关注的基金代码) ---
