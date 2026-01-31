@@ -1,20 +1,29 @@
-import requests
-import re
 import json
+import re
 import smtplib
 import time
-import os
-from email.mime.text import MIMEText
+import requests
+import datetime  # <-- 【保留这一行】
+import sqlite3
 from email.header import Header
+from email.mime.text import MIMEText
 from email.utils import formataddr
-from datetime import datetime
+import os  # 新增这个，为了处理路径
+
+
 
 # ================= 配置区域 =================
-SMTP_SERVER = 'smtp.qq.com'  # SMTP服务器
+SMTP_SERVER = 'smtp.qq.com'  # SMTP服务器bbb
 SMTP_PORT = 465  # SSL端口通常是465
-SENDER_EMAIL = '1366400216@qq.com'  # 发件人邮箱
-# 注意：这里填的不是QQ密码，是邮箱设置里开启POP3/SMTP服务时获取的“授权码”
-SENDER_PASS = 'lfvjimvncrtojhde'
+# ✅ 现在改成这样（去读环境变量，读不到就报错或者给个提示）
+# os.getenv('变量名', '默认值') -> 如果找不到变量，就用默认值(可选)
+# 但对于密码，建议不要写默认值，直接读
+SENDER_EMAIL = os.getenv('MAIL_USER')
+SENDER_PASS = os.getenv('MAIL_PASS')
+
+# 如果读不到（比如你刚改完还没配置），为了防止程序莫名其妙报错，可以加个判断
+if not SENDER_EMAIL or not SENDER_PASS:
+    print("⚠️ 警告：未检测到邮箱配置！请在环境变量中设置 MAIL_USER 和 MAIL_PASS")
 
 # 收件箱设置 (可以是同一个邮箱，也可以是你的手机139邮箱等)
 RECEIVERS = [
@@ -24,15 +33,51 @@ RECEIVERS = [
 
 # --- 🎯 我的自选基金 (在这里添加你关注的基金代码) ---
 # 自选基金代码 (支持任意数量)
-MY_WATCHLIST = ['161226', '270042']
+MY_WATCHLIST = ['161226', '270042','160644']
 
 # 2025年底收盘基准价 (根据你的截图修正了2026年现价基准)
 # 修正逻辑：现价1121，假设去年底约为1100左右，避免出现+70%的虚假涨幅
 BASE_PRICE_GOLD = 980.9
 BASE_PRICE_SILVER = 16730
 
-
+DB_FILE = 'financial_data.db'
 # ===========================================
+# ... DB_FILE = 'src/financial_data.db' ... 下面
+
+def init_db():
+    """初始化数据库表结构"""
+    # 确保目录存在
+    db_dir = os.path.dirname(DB_FILE)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # 建表：基金
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS funds (
+            fund_code TEXT,
+            fund_name TEXT,
+            record_date DATE,
+            daily_growth REAL,
+            year_growth REAL,
+            PRIMARY KEY (fund_code, record_date)
+        )
+    ''')
+
+    # 建表：金银
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS precious_metals (
+            metal_type TEXT,
+            record_date DATE,
+            price REAL,
+            change_percent REAL,
+            PRIMARY KEY (metal_type, record_date)
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 def get_headers():
     return {
@@ -219,7 +264,7 @@ def get_gold_silver_price():
 
 
 def format_email_content(top_funds, my_funds, metals):
-    today = datetime.now().strftime('%Y-%m-%d %H:%M')
+    today = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
     html = f"<h2 style='color:#333;'>📊 投资监控日报 ({today})</h2>"
 
     # 1. 自选
@@ -287,7 +332,7 @@ def send_email(content):
     # 这样收件人能看到这封信还发给了谁
     message['To'] = ",".join(RECEIVERS)
 
-    message['Subject'] = Header(f"【投资日报】{datetime.now().strftime('%m-%d')}", 'utf-8')
+    message['Subject'] = Header(f"【投资日报】{datetime.datetime.now().strftime('%m-%d')}", 'utf-8')
 
     try:
         server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
@@ -302,8 +347,49 @@ def send_email(content):
     except Exception as e:
         print(f"❌ 邮件发送失败: {e}")
 
+def save_fund_data(code, name, day_growth, year_growth):
+    """保存单只基金的数据"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+
+    # 获取今天的日期
+    today = datetime.date.today()
+
+    try:
+        cursor.execute('''
+            INSERT OR REPLACE INTO funds (fund_code, fund_name, record_date, daily_growth, year_growth)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (code, name, today, day_growth, year_growth))
+
+        conn.commit()
+        print(f"✅ 成功存入: {name} ({today})")
+    except Exception as e:
+        print(f"❌ 存入失败 {name}: {e}")
+    finally:
+        conn.close()
+
+
+def save_metal_data(metal_type, price, change):
+    """保存金银数据"""
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    today = datetime.date.today()
+
+    try:
+        cursor.execute('''
+            INSERT OR REPLACE INTO precious_metals (metal_type, record_date, price, change_percent)
+            VALUES (?, ?, ?, ?)
+        ''', (metal_type, today, price, change))
+        conn.commit()
+        print(f"✅ 成功存入: {metal_type}")
+    finally:
+        conn.close()
+
 
 if __name__ == "__main__":
+    print("0. 正在初始化数据库...")
+    init_db()  # 确保数据库和表结构存在
+
     print("1. 正在获取 Top 10...")
     top = get_filtered_funds()
 
@@ -313,8 +399,57 @@ if __name__ == "__main__":
     print("3. 正在获取金银数据...")
     metal = get_gold_silver_price()
 
+    # --- 【修改】保存数据到 SQLite (智能清洗版) ---
+    print("4. 正在保存数据到 SQLite...")
+
+
+    # 定义一个临时清洗函数：把无效数据转为 None (空)，而不是 0
+    def clean_data(val):
+        if not val or str(val) in ['--', '', 'NaN', 'None']:
+            return None
+        try:
+            # 去掉 %, +, , 等非数字符号
+            clean_str = str(val).replace('%', '').replace('+', '').replace(',', '')
+            return float(clean_str)
+        except:
+            return None
+
+
+    # 1. 保存自选基金
+    if my:
+        for f in my:
+            d_val = clean_data(f['day'])
+            y_val = clean_data(f['year'])
+
+            # 只有当名字有效才保存
+            if f.get('name') and f['name'] != '获取中...':
+                if d_val is None:
+                    print(f"   ℹ️ {f['name']} 今日无实时数据 (可能休市)，存为空值")
+                save_fund_data(f['code'], f['name'], d_val, y_val)
+
+    # 2. 保存金银
+    if metal:
+        for m in metal:
+            try:
+                # 提取价格中的纯数字
+                import re
+
+                p_match = re.search(r"(\d+\.?\d*)", str(m['price']))
+                p_val = float(p_match.group(1)) if p_match else None
+
+                # 提取涨跌幅
+                c_val = clean_data(m['day_pct'])
+
+                # 名字清洗: "沪金 (现货)" -> "沪金"
+                name_clean = m['name'].split(' ')[0]
+
+                save_metal_data(name_clean, p_val, c_val)
+            except Exception as e:
+                print(f"   保存 {m['name']} 失败: {e}")
+    # ------------------------------------------------
+
     if top or my or metal:
-        print("4. 正在发送邮件...")
+        print("5. 正在发送邮件...")
         send_email(format_email_content(top, my, metal))
     else:
         print("未获取到数据，请检查网络连接。")
