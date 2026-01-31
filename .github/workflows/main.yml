@@ -1,0 +1,49 @@
+name: 基金金价监控日报
+
+on:
+  schedule:
+    # 计划任务：UTC 02:17 = 北京时间 10:17
+    # 1-5 代表 周一到周五
+    - cron: '17 2 * * 1-5'
+  
+  # 允许手动点击按钮运行 (方便立刻测试)
+  workflow_dispatch:
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    
+    # ⚠️ 关键设置：给予 GitHub Actions 写入仓库的权限（防止 git push 报错）
+    permissions:
+      contents: write
+    
+    steps:
+    - name: 1. 拉取代码
+      uses: actions/checkout@v3
+      
+    - name: 2. 设置 Python 环境
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: 3. 安装依赖
+      run: |
+        pip install requests
+        
+    - name: 4. 运行脚本
+      env:
+        # 这里把 GitHub Secrets 里的密码传给 Python 里的 os.getenv
+        MAIL_USER: ${{ secrets.SENDER_EMAIL }}
+        MAIL_PASS: ${{ secrets.SENDER_PASS }}
+      # 👇 你的旧代码这里漏掉了 run 命令，必须写在这里
+      run: python src/get_found_rate.py
+
+    - name: 5. 保存数据库变更
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        # 强制添加数据库文件 (以防 .gitignore 忽略了它)
+        git add -f src/financial_data.db
+        # 如果有变化才提交，没变化就不提交（防止报错）
+        git commit -m "data: update financial records" || exit 0
+        git push
