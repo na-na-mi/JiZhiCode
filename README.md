@@ -5,11 +5,11 @@
 ![GitHub Actions](https://github.com/na-na-mi/JiZhiCode/actions/workflows/main.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> Fund_moniter是一个基于 GitHub Actions 的全自动化基金 & 金价监控系统，集成了数据抓取、邮件推送与可视化看板。
+> Fund_monitor是一个基于 GitHub Actions 的全自动化基金 & 金价监控系统，集成了数据抓取、邮件推送与可视化看板。
 
 ## 📖 项目简介
 
-**Fund_moniter** 是一个轻量级的个人金融数据助手。它利用 GitHub Actions 实现**零成本**的云端自动化运行邮件爬取数据发送，解决了“需要每天手动查净值”和“本地电脑必须开机”的痛点。
+**Fund_monitor** 是一个轻量级的个人金融数据助手。它利用 GitHub Actions 实现**零成本**的云端自动化运行邮件爬取数据发送，解决了“需要每天手动查净值”和“本地电脑必须开机”的痛点。
 
 **核心功能：**
 - 🤖 **自动巡航**：每周一、三、五上午 10:15 (北京时间) 自动运行。
