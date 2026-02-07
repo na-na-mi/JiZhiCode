@@ -40,7 +40,7 @@ MY_WATCHLIST = ['161226', '270042','160644','017641','161128']
 BASE_PRICE_GOLD = 980.9
 BASE_PRICE_SILVER = 16730
 
-DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'financial_data.db')
+DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../Dashboard/financial_data.db')
 
 def init_db():
     """初始化数据库表结构"""

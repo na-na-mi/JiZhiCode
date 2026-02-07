@@ -36,14 +36,14 @@ jobs:
         MAIL_USER: ${{ secrets.SENDER_EMAIL }}
         MAIL_PASS: ${{ secrets.SENDER_PASS }}
       # 👇 你的旧代码这里漏掉了 run 命令，必须写在这里
-      run: python src/get_found_rate.py
+      run: python Fund_monitor/get_found_rate.py
 
     - name: 5. 保存数据库变更
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         # 强制添加数据库文件 (以防 .gitignore 忽略了它)
-        git add -f src/financial_data.db
+        git add -f Dashboard/financial_data.db
         # 如果有变化才提交，没变化就不提交（防止报错）
         git commit -m "data: update financial records" || exit 0
         git push
